@@ -1,0 +1,11 @@
+/data/
+/workspace/
+node_modules/
+.env
+.env.*
+*.log
+*.pid
+*.tmp
+*.encrypted
+.DS_Store
+Thumbs.db

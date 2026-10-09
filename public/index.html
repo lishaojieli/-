@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>协作间 · Codex、DeepSeek</title>
+  <meta name="description" content="在一个本机聊天室中与 Codex、DeepSeek共同协作。">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-symbol">◈</span><div>协作间<small>AGENT ROOM</small></div></div>
+      <button class="new-task" id="newChat">＋ 新聊天</button>
+      <div class="sidebar-label">群聊成员 <span>2</span></div><div id="members"></div>
+      <div class="sidebar-label history-label">最近聊天</div><nav id="history" class="chat-history" aria-label="聊天记录"></nav>
+      <div class="sidebar-bottom"><span class="local-label">本机工作空间</span><button id="sidebarSettings" class="quiet-button">连接设置</button></div>
+    </aside>
+    <main class="main">
+      <header class="room-header">
+        <div class="room-title"><div class="eyebrow" id="chatTitle">你的智能体小组</div><h1>协作聊天室 <span class="room-count">你 + 2 位成员</span></h1></div>
+        <section class="account-usage" aria-label="账户用量与余额">
+          <div class="usage-grid" id="usageCards"><div class="usage-loading">正在读取账户信息…</div></div>
+        </section>
+        <div class="header-actions"><button id="refreshAccounts" class="usage-refresh" type="button" aria-label="刷新账户用量与余额" title="刷新账户用量与余额">↻</button><span id="syncStatus" class="sync-status">正在连接</span><button id="openSettings" class="outline-button">连接设置</button></div>
+      </header>
+      <div id="notice" class="notice hidden"></div>
+      <section class="chat" id="chat" aria-label="群聊交流记录" role="log" aria-live="polite" aria-relevant="additions text">
+        <div class="loading-state">正在读取本机交流记录…</div>
+      </section>
+      <div id="approvals" class="approvals"></div>
+      <div id="runStatus" class="run-status hidden" aria-live="polite"></div>
+      <div class="mobile-controls"><button id="newChatMobile" class="quiet-button">＋ 新聊天</button><select id="chatSelect" aria-label="切换聊天"></select><button id="pauseMobile" class="outline-button" disabled>暂停</button><button id="resumeMobile" class="outline-button" disabled>继续</button><button id="stopMobile" class="quiet-button" disabled>结束任务</button></div>
+      <section class="composer" aria-label="发布任务">
+        <div class="composer-top"><span id="composerLabel">发布任务或补充要求</span><span id="taskState" class="task-state">尚未开始</span></div>
+        <label class="sr-only" for="message">任务或补充要求</label>
+        <textarea id="message" rows="2" maxlength="16000" placeholder="把任务发到群里。也可以 @Codex 或 @DeepSeek…"></textarea>
+        <div class="composer-bottom"><div class="composer-options"><label for="target">交给</label><select id="target"><option value="all">全体协作</option><option value="codex_deepseek">Codex 和 DeepSeek</option><option value="codex">Codex</option><option value="deepseek">DeepSeek</option></select><label for="rounds">推进</label><select id="rounds" aria-describedby="autoHelp"><option value="1">1 轮</option><option value="2">2 轮</option><option value="3">3 轮</option><option value="auto">自动推进至完成</option></select></div><div class="send-area"><span class="shortcut">Ctrl + Enter 发送</span><button id="send" class="primary-button">发送任务</button></div></div>
+        <p id="autoHelp" class="auto-help hidden">不按固定轮数结束；验收完成后结束，停滞或达到安全预算时暂停，可手动继续。</p>
+      </section>
+      <footer class="main-footer">交流记录保存在本机 · 只有实际调用成功后才显示成员回复</footer>
+    </main>
+    <aside class="task-panel"><div class="panel-heading"><h2>当前任务</h2><span id="progressCount">—</span></div><div id="taskDetails"></div><div class="task-controls"><button id="pause" class="outline-button" disabled>暂停</button><button id="resume" class="outline-button" disabled>继续</button><button id="stop" class="quiet-button" disabled>结束任务</button></div><div class="panel-note"><h3>你随时可以插话</h3><p>新要求会保留在群记录中，并优先用于接下来的处理。</p></div></aside>
+  </div>
+  <dialog id="settingsDialog" class="settings-dialog">
+    <form id="settingsForm"><div class="dialog-heading"><div><div class="eyebrow">本机连接</div><h2>让两位成员加入协作</h2></div><button type="button" id="closeSettings" class="icon-button" aria-label="关闭设置">×</button></div>
+      <p class="settings-intro">密钥只保存在这台电脑上，使用你的 Windows 账号加密。留空会保留已保存的密钥。</p>
+      <fieldset><legend><span class="avatar codex">C</span> Codex <span class="legend-role">执行与汇总</span></legend><label for="workspace">工作目录</label><input id="workspace" name="workspace" spellcheck="false" required><label for="codexPath">Codex 程序路径</label><input id="codexPath" name="codexPath" spellcheck="false"><div class="test-line"><span id="codexDetail">等待配置</span><button type="button" data-test="codex" class="outline-button">测试连接</button></div></fieldset>
+      <fieldset><legend><span class="avatar deepseek">D</span> DeepSeek <span class="legend-role">分析与审查</span></legend><label for="deepseekKey">API Key</label><input id="deepseekKey" name="deepseekKey" type="password" autocomplete="new-password" placeholder="填写 DeepSeek API Key"><label for="deepseekModel">模型 ID</label><input id="deepseekModel" name="deepseekModel" spellcheck="false" required><div class="test-line"><span id="deepseekDetail">等待配置</span><button type="button" data-test="deepseek" class="outline-button">测试连接</button></div></fieldset>
+      <p id="settingsError" class="form-error" role="alert"></p><div class="dialog-footer"><span>测试连接会发送一条简短问候。</span><button type="submit" id="saveSettings" class="primary-button">保存连接设置</button></div>
+    </form>
+  </dialog>
+  <dialog id="budgetDialog" class="settings-dialog"><form id="budgetForm"><div class="dialog-heading"><h2>本聊天安全预算</h2><button id="closeBudget" type="button" class="icon-button" aria-label="关闭预算设置">×</button></div><p class="settings-intro">继续仅重置本次预算；累计额度只能由你在这里显式修改。</p><div id="budgetFields"></div><p id="budgetError" class="form-error" role="alert"></p><div class="dialog-footer"><button class="primary-button" type="submit">保存额度</button></div></form></dialog>
+  <dialog id="blockerDialog" class="settings-dialog"><form id="blockerForm"><div class="dialog-heading"><h2>处理暂停原因</h2><button id="closeBlocker" type="button" class="icon-button" aria-label="关闭暂停处理">×</button></div><div id="blockerFields"></div><p id="blockerError" class="form-error" role="alert"></p><div class="dialog-footer"><button class="primary-button" type="submit">保存核对结果</button></div></form></dialog>
+  <div id="toast" class="toast hidden" role="status"></div><script type="module" src="/app.mjs"></script>
+</body>
+</html>

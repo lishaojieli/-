@@ -1,0 +1,8 @@
+// Kept as a small view module; all authority remains in the local scheduler service.
+export const minutes = value => Number.isFinite(value) ? (value / 60000).toFixed(1) + ' 分钟' : '计时待恢复';
+export function progressView(task, session, escape) {
+  if (!task?.schedulerVersion) return '';
+  const passed = task.acceptance.filter(item => item.status === 'passed').length;
+  const phase = { clarify: '明确验收', discuss: '讨论', execute: '执行', verify: '验证', repair: '修复' }[task.phase] || task.phase;
+  return `<div class="run-summary"><span>${escape(phase)} · 本次 ${task.run.rounds} / ${session.config.runRounds} 轮 · 累计 ${session.sessionRounds} / ${session.config.sessionRounds} 轮 · 验收 ${passed}/${task.acceptance.length}</span><button class="quiet-button" data-budget>预算设置</button></div><details><summary>${task.status === 'completed' ? '已完成，全部必需验收通过' : task.status === 'paused' ? '暂停，尚未完成：' + escape(task.pauseReason) : '进度与验收明细'}</summary><div class="run-detail"><p>本次用时 ${minutes(task.run.activeMs)} / ${minutes(session.config.runActiveMs)}；累计 ${minutes(session.sessionActiveMs)} / ${minutes(session.config.sessionActiveMs)}</p><p>需求版本 ${task.taskRevision} · 下一步：${escape(task.nextStep)}</p><p>一轮 = 参与成员各处理一次的完整周期；点名与补充也计入预算。中断的轮次保留预留额度。</p>${task.acceptance.map(item => `<p class="acceptance-item"><strong>${item.status === 'passed' ? '✓ 通过' : '○ 待验收'}</strong> ${escape(item.description)}${item.verificationReason ? '<br>无法验证：' + escape(item.verificationReason) : ''}${item.review ? '<br>审阅依据：' + escape(item.review.basis) : ''}</p>`).join('')}${task.status === 'paused' ? '<button class="outline-button" data-blockers>处理输入与执行记录</button>' : ''}</div></details>`;
+}
